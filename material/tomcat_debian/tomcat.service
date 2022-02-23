@@ -1,0 +1,21 @@
+[Unit]
+Description=Tomcat webs servlet container
+After=network.target
+
+[Service]
+Type=forking
+User=tomcat
+Group=tomcat
+Environment=JAVA_HOME=/usr/lib/jvm/openjdk-11
+Environment=CATALINA_BASE=/opt/tomcat
+Environment=CATALINA_HOME=/opt/tomcat
+Environment=CATALINA_TMPDIR=/opt/tomcat/temp
+Environment=CLASSPATH=/opt/tomcat/bin/bootstrap.jar:/opt/tocat/bin/tomcat-juli.jar
+Environment=JRE_HOME=/usr
+Environment=CATALINA_OPTS=
+
+ExecStart=/opt/tomcat/bin/startup.sh
+ExecStop=/opt/tomcat/bin/shutdown.sh
+
+[Install]
+WantedBy=multi-user.target
