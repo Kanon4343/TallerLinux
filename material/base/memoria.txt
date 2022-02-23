@@ -1,0 +1,2 @@
+df -h
+lvextend -L +2G /dev/VG0/lv0 -r
