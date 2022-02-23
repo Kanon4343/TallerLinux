@@ -1,0 +1,97 @@
+---
+- hosts: linux
+  remote_user: ansible
+  become: yes
+  become_method: sudo
+  vars:
+    migrupo: "tomcat"
+
+  tasks:
+
+  - name: Creamos el grupo tomcat
+    group:
+     name: "{{ migrupo }}"
+     state: present
+
+  - name: Creamos el usuario tomcat
+    user:
+      name: tomcat
+      comment: Tomcat user
+      shell: /bin/bash
+      group: tomcat
+      append: yes
+      password: "{{ 'Password.01' | password_hash('sha512') }}"
+
+  - name: Instalamos tar en RedHat
+    yum:
+      name: tar
+      state: latest
+    when: ansible_os_family == "RedHat"
+
+  - name: Instalamos tar en Debian
+    apt:
+      name: tar
+      state: latest
+    when: ansible_os_family == "Debian"
+
+  - name: Instalar java en RedHat
+    yum:
+      name: java-1.8.0-openjdk
+      state: present
+    when: ansible_os_family == "RedHat"
+
+  - name: Instalar java en Debian
+    apt:
+      name: openjdk-11-jdk
+      state: present
+    when: ansible_os_family == "Debian"
+
+  - name: Descargar Tomcat
+    get_url:
+      url: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.58/bin/apache-tomcat-9.0.58.tar.gz
+      dest: /opt
+  
+  - name: Descomprimir tomcat
+    unarchive:
+      src: "/opt/apache-tomcat-9.0.58.tar.gz"
+      dest: /opt
+      remote_src: yes
+
+  - name: Cambiar nombre de carpeta Tomcat
+    command: mv /opt/apache-tomcat-9.0.58 /opt/tomcat
+
+  - name: Cambiar propietario de carpeta Tomcat
+    file:
+      path: /opt/tomcat
+      recurse: yes
+      owner: tomcat
+      group: tomcat
+      mode: '777'
+
+  - name: Copiar tomcat.service para RedHat
+    copy: src=/home/ansible/git_workspace/TallerLinux/material/tomcat_redhat/tomcat.service dest=/etc/systemd/system/
+
+  - name: Copiar todo.war
+    copy: src=/home/ansible/git_workspace/TallerLinux/material/tomcat_redhat/todo.war dest=/opt/tomcat/webapps
+
+  - name: Copiar tomcat.service para Debian
+    copy: src=/home/ansible/git_workspace/TallerLinux/material/tomcat_debian/tomcat.service dest=/etc/systemd/system/
+    when: ansible_os_family == "Debian"
+
+  - name: Reiniciando demonio
+    systemd:
+      daemon_reload: yes
+
+  - name: Inicializando servicio tomcat.service
+    systemd:
+      state: restarted
+      name: tomcat.service
+  
+  - name: Establecer servicio Tomcat
+    service:
+      name: tomcat.service
+      enabled: yes
+ 
+  - name: Reiniciando
+    reboot:
+      

@@ -1,0 +1,103 @@
+---
+- hosts: linux
+  remote_user: ansible
+  become: yes
+  become_method: sudo
+
+  tasks:
+
+  - name: Instalamos el paquete de apache en Red Hat
+    dnf:
+      name: httpd
+      state: present
+    when: ansible_os_family == "RedHat"
+
+  - name: Instalamos el paquete de apache en Debian
+    apt:
+      name: apache2
+      state: present
+    when: ansible_os_family == "Debian"
+
+  - name: Inicializamos el servicio en Red Hat
+    systemd:
+      state: started
+      name: httpd
+    when: ansible_os_family == "RedHat"
+
+  - name: Habilitamos apache en Red Hat
+    systemd:
+      name: httpd
+      enabled: yes
+      masked: no
+    when: ansible_os_family == "RedHat"
+
+  - name: Habilitamos el puerto 80/tcp en el firewall en Red Hat
+    firewalld: 
+      port: 80/tcp
+      permanent: yes
+      state: enabled
+    when: ansible_os_family == "RedHat"
+
+  - name: Habilitamos el puerto 80/udp en el firewall en Red Hat
+    firewalld:
+      port: 80/udp
+      permanent: yes
+      state: enabled
+    when: ansible_os_family == "RedHat"
+
+  - name: Recargamos el servicio firewalld en Red Hat
+    systemd:
+      name: firewalld
+      state: reloaded
+    when: ansible_os_family == "RedHat"
+
+  - name: Copiamos el archivo de virtualhost en Red Hat
+    copy: src=/home/ansible/git_workspace/TallerLinux/material/apache_redhat/vhost80.conf dest=/etc/httpd/conf.d/
+    when: ansible_os_family == "RedHat"
+
+  - name: Hacemos que selinux habilite las conexiones proxy en Red Hat
+    command: /usr/sbin/setsebool -P httpd_can_network_connect 1
+    when: ansible_os_family == "RedHat"
+
+  - name: Cargamos el modulo proxy para Debian
+    apache2_module:
+      state: present
+      name: proxy
+    when: ansible_os_family == "Debian"
+
+  - name: Cargamos el modulo proxy_http para Debian
+    apache2_module:
+      state: present
+      name: proxy_http
+    when: ansible_os_family == "Debian"
+
+  - name: Cargamos el modulo proxy_balancer para Debian
+    apache2_module:
+      state: present
+      name: proxy_balancer
+    when: ansible_os_family == "Debian"
+
+  - name: Cargamos el modulo lbmethod_byrequests para Debian
+    apache2_module:
+      state: present
+      name: lbmethod_byrequests
+    when: ansible_os_family == "Debian"
+
+  - name: Copiamos el archivo de virtualhost en Debian
+    copy:
+      src: /home/ansible/git_workspace/TallerLinux/material/apache_debian/000-default.conf
+      dest: /etc/apache2/sites-available/000-default.conf
+      force: yes
+    when: ansible_os_family == "Debian"
+
+  - name: Reiniciamos el servicio apache en Debian
+    systemd:
+      state: restarted
+      name: apache2
+    when: ansible_os_family == "Debian"
+
+  - name: Recargamos el servicio apache en Red Hat
+    systemd:
+      state: reloaded
+      name: httpd
+    when: ansible_os_family == "RedHat"

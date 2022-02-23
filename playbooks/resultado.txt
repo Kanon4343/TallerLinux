@@ -1,0 +1,47 @@
+
+PLAY [linux] *******************************************************************************************************************
+
+TASK [Gathering Facts] *********************************************************************************************************
+ok: [rocky]
+ok: [ubuntu]
+
+TASK [Creamos el grupo tomcat] *************************************************************************************************
+ok: [ubuntu]
+ok: [rocky]
+
+TASK [Creamos el usuario tomcat] ***********************************************************************************************
+changed: [ubuntu]
+changed: [rocky]
+
+TASK [Instalamos tar en RedHat] ************************************************************************************************
+skipping: [ubuntu]
+ok: [rocky]
+
+TASK [Instalamos tar en Debian] ************************************************************************************************
+skipping: [rocky]
+ok: [ubuntu]
+
+TASK [Instalar java en RedHat] *************************************************************************************************
+skipping: [ubuntu]
+ok: [rocky]
+
+TASK [Instalar java en Debian] *************************************************************************************************
+skipping: [rocky]
+ok: [ubuntu]
+
+TASK [Descargar Tomcat] ********************************************************************************************************
+ok: [rocky]
+ok: [ubuntu]
+
+TASK [Descomprimir tomcat] *****************************************************************************************************
+ok: [ubuntu]
+ok: [rocky]
+
+TASK [Cambiar nombre de carpeta Tomcat] ****************************************************************************************
+fatal: [ubuntu]: FAILED! => {"changed": true, "cmd": ["mv", "/opt/apache-tomcat-9.0.58", "/opt/tomcat"], "delta": "0:00:00.003119", "end": "2022-02-22 07:26:18.185510", "msg": "non-zero return code", "rc": 1, "start": "2022-02-22 07:26:18.182391", "stderr": "mv: cannot move '/opt/apache-tomcat-9.0.58' to '/opt/tomcat/apache-tomcat-9.0.58': Directory not empty", "stderr_lines": ["mv: cannot move '/opt/apache-tomcat-9.0.58' to '/opt/tomcat/apache-tomcat-9.0.58': Directory not empty"], "stdout": "", "stdout_lines": []}
+fatal: [rocky]: FAILED! => {"changed": true, "cmd": ["mv", "/opt/apache-tomcat-9.0.58", "/opt/tomcat"], "delta": "0:00:00.003666", "end": "2022-02-22 04:26:18.851479", "msg": "non-zero return code", "rc": 1, "start": "2022-02-22 04:26:18.847813", "stderr": "mv: cannot move '/opt/apache-tomcat-9.0.58' to '/opt/tomcat/apache-tomcat-9.0.58': File exists", "stderr_lines": ["mv: cannot move '/opt/apache-tomcat-9.0.58' to '/opt/tomcat/apache-tomcat-9.0.58': File exists"], "stdout": "", "stdout_lines": []}
+
+PLAY RECAP *********************************************************************************************************************
+rocky                      : ok=7    changed=1    unreachable=0    failed=1    skipped=2    rescued=0    ignored=0   
+ubuntu                     : ok=7    changed=1    unreachable=0    failed=1    skipped=2    rescued=0    ignored=0   
+

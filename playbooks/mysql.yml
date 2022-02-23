@@ -1,0 +1,119 @@
+---
+- hosts: linux
+  remote_user: ansible
+  become: yes
+  become_method: sudo
+ 
+  tasks:
+  
+  - name: Instalar PyMySQL en RedHat
+    yum:
+      name: python3-PyMySQL
+      state: latest
+    when: ansible_os_family == "RedHat"
+
+  - name: Instalar PyMySQL en Debian
+    apt:
+      name: python3-pymysql
+      state: latest
+    when: ansible_os_family == "Debian"
+
+  - name: Instalar MySQL en RedHat
+    yum:
+      name: mysql-server
+      state: present
+    when: ansible_os_family == "RedHat"
+
+  - name: Instalar MySQL en Debian
+    apt:
+      name: mysql-server
+      state: present
+    when: ansible_os_family == "Debian"
+
+  - name: Reiniciar demonio
+    systemd:
+      daemon_reload: yes
+
+  - name: Inicializar servicio mysqld en RedHat
+    service:
+      name: mysqld
+      state: started
+    when: ansible_os_family == "RedHat"
+
+  - name: Inicializar servicio mysql en Debian
+    service:
+      name: mysql
+      state: started
+    when: ansible_os_family == "Debian"
+
+  - name: Establecer servicio en RedHat
+    service:
+      name: mysqld
+      enabled: yes
+    when: ansible_os_family == "RedHat"
+
+  - name: Establecer servicio en Debian
+    service:
+      name: mysql
+      enabled: yes
+    when: ansible_os_family == "Debian"
+
+  - name: Creando usuario de base de datos para Debian
+    mysql_user:
+      login_unix_socket: /var/run/mysqld/mysqld.sock
+      name: todo
+      password: prueba2022
+      priv: '*.*:ALL'
+      state: present
+    when: ansible_os_family == "Debian"
+
+  - name: Creando usuario de base de datos para RedHat
+    mysql_user:
+      name: todo
+      password: prueba2022
+      priv: '*.*:ALL'
+      state: present
+    when: ansible_os_family == "RedHat"
+
+  - name: Creando Base de Datos para Debian
+    mysql_db:
+      login_unix_socket: /var/run/mysqld/mysqld.sock
+      name: todo
+      state: present
+    when: ansible_os_family == "Debian"
+
+  - name: Creando Base de Datos para RedHat
+    mysql_db:
+      name: todo
+      state: present
+    when: ansible_os_family == "RedHat"
+
+  - name: Moviendo script de base
+    copy: src=/home/ansible/git_workspace/TallerLinux/material/base/tablas.sql dest=/opt/tomcat
+
+  - name: Creando tablas en la base para Debian
+    mysql_db:
+      login_unix_socket: /var/run/mysqld/mysqld.sock
+      state: import
+      name: all
+      target: /opt/tomcat/tablas.sql
+    when: ansible_os_family == "Debian"
+
+  - name: Creando tablas en la base para RedHat
+    mysql_db:
+      state: import
+      name: all
+      target: /opt/tomcat/tablas.sql
+    when: ansible_os_family == "RedHat"
+
+  - name: Creando carpeta para JDBC
+    file:
+      path: /opt/config
+      state: directory
+      mode: 777
+
+  - name: Creando JDBC
+    copy: src=/home/ansible/git_workspace/TallerLinux/material/base/app.properties dest=/opt/config
+
+  - name: Reiniciando
+    reboot:
